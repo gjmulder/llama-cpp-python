@@ -94,3 +94,51 @@ def test_llama_pickle():
     text = b"Hello World"
 
     assert llama.detokenize(llama.tokenize(text)) == text
+    
+    
+def test_model_output(llama):
+    for prompt in PROMPTS:
+        completion = llama.create_completion(prompt, max_tokens=20)
+        assert "choices" in completion
+        assert "text" in completion["choices"][0]
+        assert isinstance(completion["choices"][0]["text"], str)
+
+def test_temperature(llama):
+    for prompt in PROMPTS:
+        for temperature in TEMPERATURES:
+            completion = llama.create_completion(prompt, max_tokens=20, temperature=temperature)
+            assert "choices" in completion
+            assert "text" in completion["choices"][0]
+            assert isinstance(completion["choices"][0]["text"], str)
+
+def test_top_k(llama):
+    for prompt in PROMPTS:
+        for top_k in TOP_K_VALUES:
+            completion = llama.create_completion(prompt, max_tokens=20, top_k=top_k)
+            assert "choices" in completion
+            assert "text" in completion["choices"][0]
+            assert isinstance(completion["choices"][0]["text"], str)
+
+
+def test_repetition_penalty(llama):
+    for prompt in PROMPTS:
+        for repetition_penalty in REPETITION_PENALTIES:
+            completion = llama.create_completion(prompt, max_tokens=20, repetition_penalty=repetition_penalty)
+            assert "choices" in completion
+            assert "text" in completion["choices"][0]
+            assert isinstance(completion["choices"][0]["text"], str)
+
+def test_long_prompt(llama):
+    prompt = "a" * (llama.get_max_sequence_length() + 1)
+    completion = llama.create_completion(prompt, max_tokens=20)
+    assert "choices" in completion
+    assert "text" in completion["choices"][0]
+    assert isinstance(completion["choices"][0]["text"], str)
+
+def test_out_of_vocab(llama):
+    prompt = "the quick brown fux"
+    completion = llama.create_completion(prompt, max_tokens=20)
+    assert "choices" in completion
+    assert "text" in completion["choices"][0]
+    assert isinstance(completion["choices"][0]["text"], str)
+    assert "out of vocabulary" in completion["warning"]

@@ -3,14 +3,23 @@ import time
 import logging
 from telethon import TelegramClient, events
 import requests
-import asyncio
-import aiohttp
-from telegram import ChatAction
-from telegram.ext import Updater, CommandHandler
-import requests
+
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+LLAMA_HOST = os.environ.get("LLAMA_HOST")
+
+# Read the Telegram API credentials from environment variables
+API_ID = int(os.environ.get("API_ID"))
+API_HASH = os.environ.get("API_HASH")
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+
+# Initialize global message count variable
+message_count = 0
+
+# Create a Telegram client
+client = TelegramClient('bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 
 def get_current_model():
     url = f"http://{LLAMA_HOST}:8000/v1/models"
@@ -25,14 +34,12 @@ def get_current_model():
     else:
         logger.error("Failed to fetch current model. Status code: %s", response.status_code)
         return None
+
 @client.on(events.NewMessage(pattern='(?i)/beth'))
 async def beth(event):
     global message_count
 
     try:
-        # Send typing action
-        await client.send_chat_action(event.chat_id, ChatAction.TYPING)
-
         # Check if message count has reached limit
         if message_count >= 1000:
             # Send "tired" message and return
@@ -106,24 +113,11 @@ async def beth(event):
         else:
             # Send an error message if the request was not successful
             await client.send_message(event.chat_id, "Sorry, I need to go to the bathroom. Back soon!")
-            #
+
     except Exception as e:
         # Handle exceptions and send an error message
         logger.error(f"Error: {e}")
         await client.send_message(event.chat_id, "Oops. Broke the chess board.")
-
-LLAMA_HOST = os.environ.get("LLAMA_HOST")
-
-# Read the Telegram API credentials from environment variables
-API_ID = int(os.environ.get("API_ID"))
-API_HASH = os.environ.get("API_HASH")
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
-
-# Create a Telegram client
-client = TelegramClient('bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
-
-# Initialize global message count variable
-message_count = 0
 
 current_model = get_current_model()
 if current_model:

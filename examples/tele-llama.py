@@ -106,7 +106,7 @@ async def beth(event):
         else:
             # Send an error message if the request was not successful
             await client.send_message(event.chat_id, "Sorry, I need to go to the bathroom. Back soon!")
-            
+            #
     except Exception as e:
         # Handle exceptions and send an error message
         logger.error(f"Error: {e}")

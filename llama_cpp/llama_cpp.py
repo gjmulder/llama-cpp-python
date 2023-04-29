@@ -117,6 +117,11 @@ LLAMA_FTYPE_MOSTLY_Q4_1 = ctypes.c_int(3)  # except 1d tensors
 LLAMA_FTYPE_MOSTLY_Q4_1_SOME_F16 = ctypes.c_int(
     4
 )  # tok_embeddings.weight and output.weight are F16
+LLAMA_FTYPE_MOSTLY_Q4_2 = ctypes.c_int(5)  # except 1d tensors
+LLAMA_FTYPE_MOSTYL_Q4_3 = ctypes.c_int(6)  # except 1d tensors
+LLAMA_FTYPE_MOSTYL_Q8_0 = ctypes.c_int(7)  # except 1d tensors
+LLAMA_FTYPE_MOSTYL_Q5_0 = ctypes.c_int(8)  # except 1d tensors
+LLAMA_FTYPE_MOSTYL_Q5_1 = ctypes.c_int(9)  # except 1d tensors
 
 # Functions
 
@@ -169,11 +174,14 @@ _lib.llama_free.restype = None
 
 # TODO: not great API - very likely to change
 # Returns 0 on success
-def llama_model_quantize(fname_inp: bytes, fname_out: bytes, itype: c_int) -> c_int:
-    return _lib.llama_model_quantize(fname_inp, fname_out, itype)
+# nthread - how many threads to use. If <=0, will use std::thread::hardware_concurrency(), else the number given
+def llama_model_quantize(
+    fname_inp: bytes, fname_out: bytes, ftype: c_int, nthread: c_int
+) -> c_int:
+    return _lib.llama_model_quantize(fname_inp, fname_out, ftype, nthread)
 
 
-_lib.llama_model_quantize.argtypes = [c_char_p, c_char_p, c_int]
+_lib.llama_model_quantize.argtypes = [c_char_p, c_char_p, c_int, c_int]
 _lib.llama_model_quantize.restype = c_int
 
 
@@ -184,32 +192,16 @@ _lib.llama_model_quantize.restype = c_int
 # will be applied on top of the previous one
 # Returns 0 on success
 def llama_apply_lora_from_file(
-    ctx: llama_context_p, path_lora: bytes, path_base_model: bytes, n_threads: c_int
+    ctx: llama_context_p,
+    path_lora: ctypes.c_char_p,
+    path_base_model: ctypes.c_char_p,
+    n_threads: c_int,
 ) -> c_int:
     return _lib.llama_apply_lora_from_file(ctx, path_lora, path_base_model, n_threads)
 
 
 _lib.llama_apply_lora_from_file.argtypes = [llama_context_p, c_char_p, c_char_p, c_int]
 _lib.llama_apply_lora_from_file.restype = c_int
-
-
-# Returns the KV cache that will contain the context for the
-# ongoing prediction with the model.
-def llama_get_kv_cache(ctx: llama_context_p):
-    return _lib.llama_get_kv_cache(ctx)
-
-
-_lib.llama_get_kv_cache.argtypes = [llama_context_p]
-_lib.llama_get_kv_cache.restype = POINTER(c_uint8)
-
-
-# Returns the size of the KV cache
-def llama_get_kv_cache_size(ctx: llama_context_p) -> c_size_t:
-    return _lib.llama_get_kv_cache_size(ctx)
-
-
-_lib.llama_get_kv_cache_size.argtypes = [llama_context_p]
-_lib.llama_get_kv_cache_size.restype = c_size_t
 
 
 # Returns the number of tokens in the KV cache
@@ -221,15 +213,81 @@ _lib.llama_get_kv_cache_token_count.argtypes = [llama_context_p]
 _lib.llama_get_kv_cache_token_count.restype = c_int
 
 
-# Sets the KV cache containing the current context for the model
-def llama_set_kv_cache(
-    ctx: llama_context_p, kv_cache, n_size: c_size_t, n_token_count: c_int
-):
-    return _lib.llama_set_kv_cache(ctx, kv_cache, n_size, n_token_count)
+# Sets the current rng seed.
+def llama_set_rng_seed(ctx: llama_context_p, seed: c_int):
+    return _lib.llama_set_rng_seed(ctx, seed)
 
 
-_lib.llama_set_kv_cache.argtypes = [llama_context_p, POINTER(c_uint8), c_size_t, c_int]
-_lib.llama_set_kv_cache.restype = None
+_lib.llama_set_rng_seed.argtypes = [llama_context_p, c_int]
+_lib.llama_set_rng_seed.restype = None
+
+
+# Returns the size in bytes of the state (rng, logits, embedding and kv_cache)
+def llama_get_state_size(ctx: llama_context_p) -> c_size_t:
+    return _lib.llama_get_state_size(ctx)
+
+
+_lib.llama_get_state_size.argtypes = [llama_context_p]
+_lib.llama_get_state_size.restype = c_size_t
+
+
+# Copies the state to the specified destination address.
+# Destination needs to have allocated enough memory.
+# Returns the number of bytes copied
+def llama_copy_state_data(ctx: llama_context_p, dest) -> c_size_t:
+    return _lib.llama_copy_state_data(ctx, dest)
+
+
+_lib.llama_copy_state_data.argtypes = [llama_context_p, POINTER(c_uint8)]
+_lib.llama_copy_state_data.restype = c_size_t
+
+
+# Set the state reading from the specified address
+# Returns the number of bytes read
+def llama_set_state_data(ctx: llama_context_p, src) -> c_size_t:
+    return _lib.llama_set_state_data(ctx, src)
+
+
+_lib.llama_set_state_data.argtypes = [llama_context_p, POINTER(c_uint8)]
+_lib.llama_set_state_data.restype = c_size_t
+
+
+# Save/load session file
+def llama_load_session_file(
+    ctx: llama_context_p,
+    path_session: bytes,
+    tokens_out,
+    n_token_capacity: c_size_t,
+    n_token_count_out,
+) -> c_size_t:
+    return _lib.llama_load_session_file(
+        ctx, path_session, tokens_out, n_token_capacity, n_token_count_out
+    )
+
+
+_lib.llama_load_session_file.argtypes = [
+    llama_context_p,
+    c_char_p,
+    llama_token_p,
+    c_size_t,
+    POINTER(c_size_t),
+]
+_lib.llama_load_session_file.restype = c_size_t
+
+
+def llama_save_session_file(
+    ctx: llama_context_p, path_session: bytes, tokens, n_token_count: c_size_t
+) -> c_size_t:
+    return _lib.llama_save_session_file(ctx, path_session, tokens, n_token_count)
+
+
+_lib.llama_save_session_file.argtypes = [
+    llama_context_p,
+    c_char_p,
+    llama_token_p,
+    c_size_t,
+]
+_lib.llama_save_session_file.restype = c_size_t
 
 
 # Run the llama inference to obtain the logits and probabilities for the next token.

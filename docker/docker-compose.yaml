@@ -1,0 +1,15 @@
+version: "3.0"
+services:
+ 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: llama-server
+    container_name: llama-server
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - /data/llama:/var/lib/models

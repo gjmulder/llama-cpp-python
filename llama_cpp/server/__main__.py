@@ -27,14 +27,14 @@ from sse_starlette.sse import EventSourceResponse
 
 class Settings(BaseSettings):
     model: str
-    n_ctx: int = 2048
+    n_ctx: int = 512
     n_batch: int = 512
     n_threads: int = max((os.cpu_count() or 2) // 2, 1)
     f16_kv: bool = True
     use_mlock: bool = False  # This causes a silent failure on platforms that don't support mlock (e.g. Windows) took forever to figure out...
     use_mmap: bool = True
     embedding: bool = True
-    last_n_tokens_size: int = 64
+    last_n_tokens_size: int = 128
     logits_all: bool = False
     cache: bool = False  # WARNING: This is an experimental feature
 

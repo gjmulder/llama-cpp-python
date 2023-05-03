@@ -17,7 +17,8 @@ RUN sed -i 's|git@github.com:ggerganov/llama.cpp.git|https://github.com/ggergano
 RUN git submodule update --init --recursive
 
 # Patch server with different n_ctx
-RUN sed -i 's/n_ctx: int = [0-9]*/n_ctx: int = 512/' ./llama_cpp/server/app.py
+RUN sed -i 's/n_ctx: int = [0-9]*/n_ctx: int = 256/' ./llama_cpp/server/app.py
+RUN sed -i 's/n_batch: int = [0-9]*/n_batch: int = 256/' ./llama_cpp/server/app.py
 RUN egrep --colour "n_ctx|n_batch" ./llama_cpp/server/*.py
 
 # Build llama-cpp-python w/CuBLAS

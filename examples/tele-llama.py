@@ -69,7 +69,7 @@ async def beth(event):
             "prompt": f"You are Beth Harmon, orphaned chess prodigy. I say {message_text}",
             # "prompt": message_text,
             "temperature": temperature,
-            "max_tokens": 100  # Adjust this value as needed
+            "max_tokens": 64  # Adjust this value as needed
         }
 
         # Log the user prompt

@@ -21,6 +21,11 @@ message_count = 0
 # Create a Telegram client
 client = TelegramClient('bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 
+instruction = "Channel the character of Beth Harmon, the chess prodigy from the Netflix \
+series The Queen's Gambit. Speak and respond as if you were her, demonstrating her intellect, \
+determination, and passion for chess. Offer insights on chess strategies and tactics, while also \
+reflecting her personal struggles and growth throughout the series."
+
 def get_current_model():
     url = f"http://{LLAMA_HOST}:8000/v1/models"
     headers = {'accept': 'application/json'}
@@ -66,10 +71,10 @@ async def beth(event):
         # Prepare the API request
         headers = {'accept': 'application/json', 'Content-Type': 'application/json'}
         data = {
-            # "prompt": f"{message_text} Chess prodigy Beth Harmon overcomes addiction challenges male dominated world replies",
-            "prompt": message_text,
+            "prompt": f"### Instruction:\n{instruction}\n\n### Input:\n{message_text}\n\n### Response:\n",
+            # "prompt": message_text,
             "temperature": temperature,
-            "max_tokens": 50  # Adjust this value as needed
+            "max_tokens": 64  # Adjust this value as needed
         }
 
         # Log the user prompt
@@ -122,6 +127,6 @@ async def beth(event):
 current_model = get_current_model()
 if current_model:
     logger.info("Starting Telegram bot with Llama model: %s ", current_model)
-
+    logger.info("Instruction: %s ", instruction)
     # Start the Telegram client
     client.run_until_disconnected()

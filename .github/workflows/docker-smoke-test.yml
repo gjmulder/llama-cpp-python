@@ -18,7 +18,7 @@ jobs:
 
     - name: Install python deps
       run: |
-        pip -y install requests json argpass struct
+        pip install requests json argpass struct
 
     - name: Run Python script to d/l model
       run: |

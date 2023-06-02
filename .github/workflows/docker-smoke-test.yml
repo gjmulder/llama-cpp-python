@@ -1,0 +1,29 @@
+# .github/workflows/docker.yml
+name: Docker Image CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Run Python script to d/l model
+      run: |
+        python ./docker/open_llama/hug_model.py -a SlyEcho -s open_llama_3b -f "q5_1"
+
+    - name: Build Docker image
+      run: |
+        docker build ./docker/open_llama --file Dockerfile --tag open_llama_3b
+
+    - name: Run Docker image
+      run: |
+        ./docker/open_llama/start.sh

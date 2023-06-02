@@ -6,7 +6,7 @@ python3 ./hug_model.py -a SlyEcho -s ${MODEL} -f open-llama-3b-q5_1.bin
 ls -lh *.bin
 
 # Build the default OpenBLAS image
-docker build -t $MODEL .
+docker build -e CMAKE_ARGS="-DLLAMA_OPENBLAS=1 -DSSE3=1 -DAVX1=1 -DFMA=1 -DAVX2=0 -DAVX512=0 -DAVX512_VBMI=0 -DAVX512_VNNI=0 -DF16C=0 -DFP16_VA=0 -DWASM_SIMD=0" -t $MODEL .
 docker images | egrep "^(REPOSITORY|$MODEL)"
 
 echo

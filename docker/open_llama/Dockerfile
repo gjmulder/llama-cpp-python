@@ -3,6 +3,7 @@ ARG IMAGE=python:3-slim-bullseye
 
 # Use the image as specified
 FROM ${IMAGE}
+ENV CMAKE_ARGS="-DLLAMA_OPENBLAS=1 -DSSE3=1 -DAVX1=1 -DFMA=1 -DAVX2=0 -DAVX512=0 -DAVX512_VBMI=0 -DAVX512_VNNI=0 -DF16C=0 -DFP16_VA=0 -DWASM_SIMD=0"
 
 # Re-declare the ARG after FROM
 ARG IMAGE

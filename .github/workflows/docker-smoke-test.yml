@@ -1,5 +1,4 @@
-# .github/workflows/docker.yml
-name: Docker Image CI
+name: Docker Smoke Test CI
 
 on: [push]
 

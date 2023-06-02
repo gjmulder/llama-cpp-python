@@ -32,7 +32,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build ./docker/open_llama --file D./docker/open_llama/Dockerfile --tag open_llama_3b
+        docker build ./docker/open_llama --file ./docker/open_llama/Dockerfile --tag open_llama_3b
 
     - name: Run Docker image
       run: |

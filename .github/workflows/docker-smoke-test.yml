@@ -31,7 +31,7 @@ jobs:
     - name: Build Docker image
       run: |
         sed -i '/^FROM/a ENV FORCE_CMAKE=1' ./docker/open_llama/Dockerfile
-        sed -i '/^FROM/a ENV CMAKE_ARGS="-DLLAMA_OPENBLAS=1 -DSSE3=1 -DAVX1=1 -DFMA=1 -DAVX2=0 -DAVX512=0 -DAVX512_VBMI=0 -DAVX512_VNNI=0 -DF16C=0 -DFP16_VA=0 -DWASM_SIMD=0"' ./docker/open_llama/Dockerfile
+        sed -i '/^FROM/a ENV CMAKE_ARGS="-DLLAMA_OPENBLAS=1 -DSSE3=1 -DAVX1=1 -DFMA=1 -DF16C=1 -DAVX2=0 -DAVX512=0 -DAVX512_VBMI=0 -DAVX512_VNNI=0"' ./docker/open_llama/Dockerfile
         docker build ./docker/open_llama --tag open_llama_3b
 
     - name: Run Docker image

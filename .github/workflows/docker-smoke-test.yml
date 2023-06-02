@@ -28,10 +28,10 @@ jobs:
         rm -f model.bin
         mv SlyEcho_open_llama_3b_ggml_open-llama-3b-q5_1.bin ./docker/open_llama/model.bin
 
-    - name: Build Docker image
+    - name: Build Docker image with AVX512 disabled
       run: |
         sed -i '/^FROM/a ENV FORCE_CMAKE=1' ./docker/open_llama/Dockerfile
-        sed -i '/^FROM/a ENV CMAKE_ARGS="-DLLAMA_OPENBLAS=1 -DSSE3=1 -DAVX1=1 -DFMA=1 -DF16C=1 -DAVX2=0 -DAVX512=0 -DAVX512_VBMI=0 -DAVX512_VNNI=0"' ./docker/open_llama/Dockerfile
+        sed -i '/^FROM/a ENV CMAKE_ARGS="-DLLAMA_OPENBLAS=1 -DSSE3=1 -DAVX1=1 -DAVX2=1 -DFMA=1 -DF16C=1 -DAVX512=0 -DAVX512_VBMI=0 -DAVX512_VNNI=0"' ./docker/open_llama/Dockerfile
         docker build ./docker/open_llama --tag open_llama_3b
 
     - name: Run Docker image

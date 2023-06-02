@@ -16,6 +16,10 @@ jobs:
       with:
         python-version: 3.8
 
+    - name: Install python deps
+      run: |
+        pip install -y requests json argpass struct
+
     - name: Run Python script to d/l model
       run: |
         python ./docker/open_llama/hug_model.py -a SlyEcho -s open_llama_3b -f "q5_1"
